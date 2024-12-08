@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio de Sesión</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Registro / Inicio de Sesión</h1>
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Correo Electrónico" required>
+            <input type="text" id="nombre" placeholder="Nombre (solo para registro)">
+            <button type="button" id="btnRegister">Registrar</button>
+            <button type="button" id="btnLogin">Iniciar Sesión</button>
+        </form>
+        
+        <div class="navigation-buttons">
+            <button id="btnABM1">Usuarios</button>
+            <button id="btnABM2">Medidores</button>
+            <button id="btnDashboard">Dashboard</button>
+        </div>
+        
+        <div id="message"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
