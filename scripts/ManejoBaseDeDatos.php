@@ -12,6 +12,11 @@ $username = "root";
 $password = "";
 $dbname = "bd_consumo_electrico";
 
+$admins = [
+    ["email" => "ronald.narvaez@gmail.com", "password" => "admin123"],
+    ["email" => "alejandro.mollinedo@ucb.edu.bo", "password" => "admin456"]
+];
+
 try {
     // Conectar a la base de datos usando PDO
     $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
@@ -35,10 +40,17 @@ try {
                 $stmt->execute();
                 $mediciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 echo json_encode($mediciones);
+            }elseif ($_GET['action'] === 'get_mediciones_completas') {
+                $medidorID = intval($_GET['medidorID']);
+                $stmt = $conn->prepare("SELECT * FROM lectura_medidor WHERE MedidorID = :MedidorID ORDER BY FechaHora DESC");
+                $stmt->bindParam(':MedidorID', $medidorID);
+                $stmt->execute();
+                $mediciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                echo json_encode($mediciones);
             }elseif ($_GET['action'] === 'obtener_datos_medicion') {
                 $medidorID = $_GET['medidorID'];
                 $query = "SELECT * FROM lectura_medidor WHERE MedidorID = $medidorID ORDER BY FechaHora DESC LIMIT 1";
-                $result = $db->query($query);
+                $result = $conn->query($query);
             
                 if ($result->num_rows > 0) {
                     echo json_encode(["status" => "success", "datos" => $result->fetch_assoc()]);
@@ -84,31 +96,49 @@ try {
         switch ($data['action']) {
             case "register":
                 // Registrar un nuevo usuario
-                $stmt = $conn->prepare("INSERT INTO usuario (Nombre, Direccion, Telefono, Email) VALUES (:Nombre, :Direccion, :Telefono, :Email)");
+                error_log("Datos recibidos para registro: " . print_r($data, true)); // Registro en logs
+                $stmt = $conn->prepare("INSERT INTO usuario (Nombre, Direccion, Telefono, Email, Password) 
+                            VALUES (:Nombre, :Direccion, :Telefono, :Email, :Password)");
                 $stmt->bindParam(':Nombre', $data['Nombre']);
                 $stmt->bindParam(':Direccion', $data['Direccion']);
                 $stmt->bindParam(':Telefono', $data['Telefono']);
                 $stmt->bindParam(':Email', $data['Email']);
-                if ($stmt->execute()) {
+                $stmt->bindParam(':Password', $data['Password']); // Asegúrate de que el nombre del campo sea "contraseña"
+                try {
+                    $stmt->execute();
                     echo json_encode(["status" => "success", "message" => "Usuario registrado"]);
-                } else {
-                    echo json_encode(["status" => "error", "message" => "Error al registrar"]);
+                } catch (PDOException $e) {
+                    error_log("Error al registrar usuario: " . $e->getMessage());
+                    echo json_encode(["status" => "error", "message" => "Error al registrar: " . $e->getMessage()]);
                 }
+                
                 break;
 
             case "login":
-                // Inicio de sesión
-                $stmt = $conn->prepare("SELECT * FROM usuario WHERE Email = :Email");
+                // Validar si es administrador
+                foreach ($admins as $admin) {
+                    if (strtolower($admin['email']) === strtolower($data['Email']) && $admin['password'] === $data['Password']) {
+                        echo json_encode(["status" => "success", "message" => "Bienvenido, Administrador"]);
+                        exit; // Salir después de autenticar al administrador
+                    }
+                }
+
+
+
+                // Verificar si el usuario existe
+                $stmt = $conn->prepare("SELECT * FROM usuario WHERE Email = :Email AND Password = :Password");
                 $stmt->bindParam(':Email', $data['Email']);
+                $stmt->bindParam(':Password', $data['Password']); // Usar el mismo nombre de columna
                 $stmt->execute();
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($user) {
                     echo json_encode(["status" => "success", "user" => $user]);
                 } else {
-                    echo json_encode(["status" => "error", "message" => "Usuario no encontrado"]);
+                    echo json_encode(["status" => "error", "message" => "Correo o contraseña incorrectos"]);
                 }
                 break;
+
 
             case "add_medidor":
                 // Agregar un nuevo medidor

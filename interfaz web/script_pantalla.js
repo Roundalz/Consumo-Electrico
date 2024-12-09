@@ -13,6 +13,15 @@ if (!userData || !userData.ID) {
 
 // Extraer el ID del usuario
 const userID = userData.ID;
+// Modificado por Kenneth: Generar dinámicamente el enlace del dashboard
+document.addEventListener("DOMContentLoaded", () => {
+    const dashboardLink = document.getElementById('dashboardLink');
+    if (dashboardLink) {
+        const presupuesto = 60; // Puedes cambiar el valor del presupuesto si es necesario
+        dashboardLink.href = `http://localhost/medidor/medidor/dashboard_usuario.php?usuario_id=${userID}&presupuesto=${presupuesto}`;
+    }
+});
+
 // Cargar datos del usuario
 function cargarDatosUsuario() {
     fetch(`${apiUrl}?action=get_usuario&id=${userID}`)
@@ -150,7 +159,7 @@ function cargarYMostrarMediciones(medidorID) {
 // Función para obtener y mostrar mediciones
 function obtenerMedicion() {
     console.log("Enviando solicitud de medición...");
-    fetch("http://192.168.0.19/comenzar_medicion", {
+    fetch("http://192.168.117.172/comenzar_medicion", {
         method: 'GET',
         mode: 'cors',  // Agregar la opción CORS
     })
@@ -249,6 +258,51 @@ document.getElementById("formAgregarMedidor").addEventListener("submit", (event)
         })
         .catch((error) => console.error("Error al agregar el medidor:", error));
 });
+document.addEventListener("DOMContentLoaded", function () {
+    const verTodasMedicionesBtn = document.getElementById("verTodasMedicionesBtn");
+    const ventanaFlotante = document.getElementById("ventanaFlotante");
+    const cerrarVentana = document.getElementById("cerrarVentana");
+    const tablaMedicionesFlotante = document.getElementById("tablaMedicionesFlotante").querySelector("tbody");
+
+    // Cambié la referencia de medidorSeleccionado a medidorSeleccionadoID
+    verTodasMedicionesBtn.addEventListener("click", function () {
+        if (medidorSeleccionadoID) {
+            fetch(`${apiUrl}?action=get_mediciones_completas&medidorID=${medidorSeleccionadoID}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log(data); 
+                    if (data.length) {
+                        tablaMedicionesFlotante.innerHTML = data
+                            .map(
+                                (medicion) => `
+                                    <tr>
+                                        <td>${medicion.ID}</td>
+                                        <td>${medicion.MedidorID}</td>
+                                        <td>${medicion.FechaHora}</td>
+                                        <td>${medicion.Corriente_rms}</td>
+                                        <td>${medicion.Voltaje_rms}</td>
+                                        <td>${medicion.Potencia_activa}</td>
+                                        <td>${medicion.Potencia_aparente}</td>
+                                        <td>${medicion.Energia}</td>
+                                    </tr>
+                                `
+                            )
+                            .join("");
+                    } else {
+                        tablaMedicionesFlotante.innerHTML = "<tr><td colspan='8'>No hay mediciones disponibles.</td></tr>";
+                    }
+                    ventanaFlotante.style.display = "block";
+                })
+                .catch((error) => console.error("Error al cargar las mediciones:", error));
+        }
+    });
+
+    // Event listener para cerrar la ventana flotante
+    cerrarVentana.addEventListener("click", function () {
+        ventanaFlotante.style.display = "none";
+    });
+});
+
 
 // Inicializar la pantalla
 cargarDatosUsuario();

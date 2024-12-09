@@ -6,12 +6,6 @@
     <title>Pantalla Principal</title>
     <link rel="stylesheet" href="estilos.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-        }
 
         #main {
             max-width: 1200px;
@@ -20,11 +14,13 @@
             background: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
         }
 
         h1 {
             color: #333;
             text-align: center;
+            margin-bottom: 20px;
         }
 
         table {
@@ -139,6 +135,7 @@
                 <div id="datosMedicion" style="display: none; margin-top: 20px;">
                     <button id="btnIniciarMedicion">Iniciar Medición</button>
                     <button id="btnDetenerMedicion">Detener Medición</button>
+                    <button id="verTodasMedicionesBtn">Ver todas las mediciones</button>
                 </div>
                 
             </div>
@@ -160,7 +157,32 @@
             </table>
         </div>
     </div>
+    <!-- Boton Dashboard -->
+    <div class="buttons">
+        <a href="#" id="dashboardLink" class="btn btn-success">Visualización Grafica del Consumo</a>
+    </div>
 
+    <!-- Ventana flotante para mostrar todas las mediciones -->
+    <div id="ventanaFlotante" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background-color: white; border: 1px solid #ccc; padding: 20px; width: 80%; height: 80%; overflow-y: auto;">
+        <button id="cerrarVentana" style="position: absolute; top: 10px; right: 10px; cursor: pointer;">X</button>
+        <h3>Todas las mediciones</h3>
+        <table id="tablaMedicionesFlotante" border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>MedidorID</th>
+                    <th>FechaHora</th>
+                    <th>Corriente RMS</th>
+                    <th>Voltaje RMS</th>
+                    <th>Potencia Activa</th>
+                    <th>Potencia Aparente</th>
+                    <th>Energía</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        
+    </div>
     <!-- Formulario Modal para Agregar Medidor -->
     <div id="modalAgregarMedidor" class="modal" style="display: none;">
         <div class="modal-content">

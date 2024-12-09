@@ -8,15 +8,18 @@
 </head>
 <body>
     <div class="container">
-        <h1>Registro / Inicio de Sesión</h1>
-        <form id="loginForm">
-            <input type="email" id="email" placeholder="Correo Electrónico" required>
-            <input type="text" id="nombre" placeholder="Nombre (solo para registro)">
-            <button type="button" id="btnRegister">Registrar</button>
+        <h1 id="titulo">Registro / Inicio de Sesión</h1>
+        <form id="loginForm" class="formulario">
+            <input type="email" id="email" placeholder="Correo electrónico" required>
+            <input type="text" id="password" placeholder="Contraseña" required>
+            <input type="text" id="nombre" placeholder="Nombre (solo llenar si te registras)">
+            <input type="text" id="direccion" placeholder="Dirección (solo llenar si te registras)">
+            <input type="text" id="telefono" placeholder="Teléfono (solo llenar si te registras)">
             <button type="button" id="btnLogin">Iniciar Sesión</button>
+            <button type="button" id="btnRegister">Registrar</button>
         </form>
-        
-        <div class="navigation-buttons">
+
+        <div class="navigation-buttons" id="adminButtons" style="display: none;">
             <button id="btnABM1">Usuarios</button>
             <button id="btnABM2">Medidores</button>
             <button id="btnDashboard">Dashboard</button>

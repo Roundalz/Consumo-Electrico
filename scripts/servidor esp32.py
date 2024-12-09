@@ -1,13 +1,31 @@
+from machine import ADC, Pin, PWM
 import network
 import socket
 import time
 import math
-from machine import ADC, Pin
 import json
+
+# Configuración del LED RGB con PWM
+led_red = PWM(Pin(14), freq=1000)
+led_green = PWM(Pin(13), freq=1000)
+led_blue = PWM(Pin(12), freq=1000)
+
+def set_led_color(red, green, blue):
+    """
+    Establece el color del LED RGB usando valores PWM.
+    Los valores deben estar en el rango de 0 a 1023.
+    """
+    led_red.duty(red)
+    led_green.duty(green)
+    led_blue.duty(blue)
 
 # Función para realizar la medición
 def comenzar_medicion():
     print("Procesando solicitud de medición...")
+    
+    # Encender LED verde para indicar que la medición ha comenzado
+    set_led_color(0, 1023, 0)  # Verde
+
     try:
         # Configuración del sensor ACS712
         analog_pin = 34
@@ -47,22 +65,25 @@ def comenzar_medicion():
             'energia': energia
         }
 
+        # Cambiar el LED a rojo para indicar que la medición ha finalizado
+        set_led_color(1023, 0, 0)  # Rojo
+
         return datos
 
     except Exception as e:
         print("Error al realizar la medición:", e)
+        set_led_color(1023, 0, 0)  # Rojo en caso de error
         return {"error": "Hubo un problema con la medición"}
 
+# Función del servidor (sin cambios principales)
 def start_server():
-    # Configuración de la red Wi-Fi
     sta_if = network.WLAN(network.STA_IF)
     sta_if.active(True)
-    sta_if.connect('Flia Estevez', 'falquito2619')
+    sta_if.connect('Realme 11 peluson', 'rikoricardo')
     while not sta_if.isconnected():
         time.sleep(1)
     print('Conectado a la red Wi-Fi, IP:', sta_if.ifconfig()[0])
 
-    # Configuración del servidor web
     addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
     s = socket.socket()
     s.bind(addr)
@@ -74,17 +95,13 @@ def start_server():
         print('Cliente conectado desde', addr)
 
         try:
-            # Leer la solicitud HTTP
             request = cl.recv(1024).decode('utf-8')
             print("Solicitud recibida:", request)
 
-            # Verificar si la solicitud es para la ruta /comenzar_medicion
             if 'GET /comenzar_medicion' in request:
-                # Procesamiento de la solicitud de medición
                 print('Procesando solicitud de medición...')
                 medicion = comenzar_medicion()
 
-                # Enviar los encabezados HTTP
                 cl.send('HTTP/1.1 200 OK\r\n')
                 cl.send('Content-Type: application/json\r\n')
                 cl.send('Access-Control-Allow-Origin: *\r\n')
@@ -92,12 +109,9 @@ def start_server():
                 cl.send('Access-Control-Allow-Methods: GET\r\n')
                 cl.send('\r\n')
 
-                # Enviar los datos de medición
                 cl.send(json.dumps(medicion))
-
                 print('Datos enviados:', medicion)
             else:
-                # Si no es la ruta correcta, devolver 404
                 cl.send('HTTP/1.1 404 Not Found\r\n')
                 cl.send('Content-Type: application/json\r\n')
                 cl.send('Access-Control-Allow-Origin: *\r\n')
@@ -114,7 +128,6 @@ def start_server():
 
         finally:
             cl.close()
-
 
 # Iniciar el servidor web
 start_server()
